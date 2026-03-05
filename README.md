@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 [![official project](http://jb.gg/badges/official.svg)](https://github.com/JetBrains#jetbrains-on-github)
 
 # Multiplatform library template
@@ -20,4 +19,4 @@ Please find the detailed guide [here](https://www.jetbrains.com/help/kotlin-mult
 * [Gradle Maven Publish Plugin \- Publishing to Maven Central](https://vanniktech.github.io/gradle-maven-publish-plugin/central/)
 =======
 # cmp-countrypicker
->>>>>>> origin/main
+
