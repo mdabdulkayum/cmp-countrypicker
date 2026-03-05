@@ -4,8 +4,6 @@ import core.Country
 
 internal object CountryData {
 
-
-
     val countries: List<Country> = listOf(
         // Asia (51 countries)
         Country("Afghanistan", "AF", "AFG", "+93", "🇦🇫", "Asia", 9..9),
@@ -241,7 +239,6 @@ internal object CountryData {
         Country("Greenland", "GL", "GRL", "+299", "🇬🇱", "North America", 6..6),
         Country("Guadeloupe", "GP", "GLP", "+590", "🇬🇵", "North America", 9..9),
         Country("Guam", "GU", "GUM", "+1-671", "🇬🇺", "Oceania", 10..10),
-        Country("Curacao", "CW", "CUW", "+599", "🇨🇼", "North America", 7..7),
         Country("Isle of Man", "IM", "IMN", "+44", "🇮🇲", "Europe", 10..10),
         Country("Jersey", "JE", "JEY", "+44", "🇯🇪", "Europe", 10..10),
         Country("Guernsey", "GG", "GGY", "+44", "🇬🇬", "Europe", 10..10),
@@ -250,10 +247,6 @@ internal object CountryData {
         Country("Montserrat", "MS", "MSR", "+1-664", "🇲🇸", "North America", 10..10),
         Country("New Caledonia", "NC", "NCL", "+687", "🇳🇨", "Oceania", 6..6),
     )
-
-    /*init {
-        DataValidator.validate(countries)
-    }*/
 
 
     /**
@@ -280,6 +273,39 @@ internal object CountryData {
      */
     fun getByDialCode(dialCode: String): List<Country> =
         dialCodeMap[dialCode] ?: emptyList()
+
+    /**
+     * Parses a full international phone number (e.g., "+8801712345678")
+     * into a Pair of the matching Country and the remaining national number.
+     */
+    fun parsePhoneNumber(fullNumber: String): Pair<Country?, String> {
+        // 1. Clean the input: keep only digits and the leading plus
+        val cleaned = if (fullNumber.startsWith("+")) {
+            "+" + fullNumber.filter { it.isDigit() }
+        } else {
+            fullNumber.filter { it.isDigit() }
+        }
+
+        if (cleaned.isEmpty()) return Pair(null, "")
+
+        // 2. Find matching countries by dial code.
+        // We sort by dialCode length descending to match "+1-268" before "+1"
+        val sortedCountries = countries.sortedByDescending { it.dialCode.length }
+
+        for (country in sortedCountries) {
+
+            // Inside parsePhoneNumber loop
+            val dialDigitsOnly = country.dialCode.filter { it.isDigit() }
+            val inputDigitsOnly = cleaned.removePrefix("+")
+
+            if (inputDigitsOnly.startsWith(dialDigitsOnly)) {
+                val nationalNumber = inputDigitsOnly.removePrefix(dialDigitsOnly)
+                return Pair(country, nationalNumber)
+            }
+        }
+
+        return Pair(null, cleaned)
+    }
 
 
 }

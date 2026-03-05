@@ -23,6 +23,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
@@ -34,6 +36,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -42,6 +45,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import core.Country
+import theme.CountryPickerTheme
+import theme.CountryPickerThemeDefaults
 import theme.LocalCountryPickerTheme
 import theme.getContainerColor
 import theme.getOnContainerColor
@@ -57,41 +62,46 @@ import theme.getTypography
 internal fun CountryPickerSearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    theme: CountryPickerTheme = CountryPickerThemeDefaults.light()
 ) {
-    val theme = LocalCountryPickerTheme.current
+  //  val theme = LocalCountryPickerTheme.current
 
-    // ✅ Call @Composable functions OUTSIDE of lambdas
-    val typography = theme.getTypography()
-    val onSurfaceColor = theme.getOnSurfaceColor()
-    val outlineColor = theme.getOutlineColor()
-    val surfaceColor = theme.getSurfaceColor()
-
-    TextField(
-        value = query,
-        onValueChange = onQueryChange,
-        modifier = modifier.fillMaxWidth(),
-        placeholder = { Text("Search country or dial code...") },
-        leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = null) },
-
-        trailingIcon = {
-            if (query.isNotEmpty()) {
-                IconButton(onClick = { onQueryChange("") }) {
-                    Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear")
-                }
-            }
-        },
-        shape = CircleShape, // Modern rounded look
-        colors = TextFieldDefaults.colors(
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            disabledIndicatorColor = Color.Transparent,
-            focusedContainerColor = theme.getOutlineColor().copy(alpha = 0.1f),
-            unfocusedContainerColor = theme.getOutlineColor().copy(alpha = 0.05f)
-        ),
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search)
+    val customTextSelectionColors = TextSelectionColors(
+        handleColor = theme.getPrimaryColor(),
+        backgroundColor = theme.getPrimaryColor().copy(alpha = 0.2f)
     )
+
+    CompositionLocalProvider(
+        LocalTextSelectionColors provides customTextSelectionColors
+    ) {
+        TextField(
+            value = query,
+            onValueChange = onQueryChange,
+            modifier = modifier.fillMaxWidth(),
+            placeholder = { Text("Search country or dial code...") },
+            leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = null) },
+
+            trailingIcon = {
+                if (query.isNotEmpty()) {
+                    IconButton(onClick = { onQueryChange("") }) {
+                        Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear")
+                    }
+                }
+            },
+            shape = CircleShape, // Modern rounded look
+            colors = TextFieldDefaults.colors(
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                cursorColor = theme.getOutlineColor(),
+                focusedContainerColor = theme.getOutlineColor().copy(alpha = 0.1f),
+                unfocusedContainerColor = theme.getOutlineColor().copy(alpha = 0.05f)
+            ),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search)
+        )
+    }
 }
 
 
@@ -246,7 +256,7 @@ internal fun CountryListItem(
                 Text(
                     country.dialCode,
                     style = theme.getTypography().labelMedium,
-                    color = theme.getOutlineColor().copy(alpha = 0.8f),
+                    color = theme.getOutlineColor(),
                     modifier = Modifier.widthIn(min = 48.dp)
                 )
             }

@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -21,6 +23,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,11 +33,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import core.Country
 import core.CountryFilter
+import core.internal.CountryData
 import phone.PhoneFormatter
 import phone.PhoneValidator
 import theme.CountryPickerTheme
@@ -42,6 +47,7 @@ import theme.CountryPickerThemeDefaults
 import theme.getErrorColor
 import theme.getOnSurfaceColor
 import theme.getOutlineColor
+import theme.getPrimaryColor
 import theme.getSurfaceColor
 import theme.getTypography
 
@@ -63,6 +69,25 @@ data class PhoneInputState(
         if (country == null || phoneNumber.isEmpty()) return ""
         return country.dialCode + phoneNumber.filter { it.isDigit() }
     }
+
+    companion object {
+        fun fromFullNumber(fullNumber: String): PhoneInputState {
+            val (country, nationalNumber) = CountryData.parsePhoneNumber(fullNumber)
+
+            // Optional: Run initial validation
+            val validation = country?.let {
+                PhoneValidator.validateByCountry(it, nationalNumber)
+            }
+
+            return PhoneInputState(
+                phoneNumber = nationalNumber,
+                country = country,
+                isValid = validation?.isValid ?: false,
+                error = validation?.error
+            )
+        }
+    }
+
 }
 
 /**
@@ -99,7 +124,11 @@ fun PhoneInputField(
     theme: CountryPickerTheme = CountryPickerThemeDefaults.light(),
     showCountryCode: Boolean = true,
     showCountryFlag: Boolean = false,
-    showCountryISO2: Boolean = false
+    showCountryISO2: Boolean = false,
+    isEnable: Boolean = true,
+    showTrail: Boolean = false,
+    trailText: String = "Search",
+    onTrailClick: () -> Unit = {}
 ) {
     var isCountryPickerOpen by remember { mutableStateOf(false) }
     val showFormatToggle by remember { mutableStateOf(allowFormatting) }
@@ -142,6 +171,7 @@ fun PhoneInputField(
                 showCountryCode = showCountryCode,
                 showCountryFlag = showCountryFlag,
                 showCountryISO2 = showCountryISO2,
+                isEnable = isEnable
             )
 
             // Divider
@@ -156,25 +186,60 @@ fun PhoneInputField(
             PhoneNumberInput(
                 value = state.phoneNumber,
                 onValueChange = { newNumber ->
+
+                    // 1. If it's just a "+", keep it in the state so the user can continue typing
+                    if (newNumber == "+") {
+                        onStateChange(state.copy(phoneNumber = "+", isValid = false, error = null))
+                        return@PhoneNumberInput
+                    }
+
+                    // 2. If it starts with "+" and has more digits, try to parse
+                    if (newNumber.startsWith("+") && newNumber.length > 1) {
+                        val (parsedCountry, nationalNumber) = CountryData.parsePhoneNumber(newNumber)
+
+                        if (parsedCountry != null) {
+                            // We found a match! Update country and strip the dial code
+                            val validation =
+                                PhoneValidator.validateByCountry(parsedCountry, nationalNumber)
+                            onStateChange(
+                                state.copy(
+                                    country = parsedCountry,
+                                    phoneNumber = nationalNumber,
+                                    isValid = validation.isValid,
+                                    error = validation.error
+                                )
+                            )
+                            return@PhoneNumberInput
+                        } else {
+                            // Still typing the dial code (e.g., "+88"), keep the raw input for now
+                            onStateChange(state.copy(phoneNumber = newNumber, isValid = false))
+                            return@PhoneNumberInput
+                        }
+                    }
+
+                    // 2. Standard digit-only cleaning
                     val cleaned = newNumber.filter { it.isDigit() }
 
-                    // Validate
+                    // 3. Apply Max Length based on the current country
+                    // Using 15 as a safe fallback for international standards
+                    val maxLength = currentCountry?.phoneNumberLength?.last ?: 15
+                    if (cleaned.length > maxLength) return@PhoneNumberInput
+
+                    // 4. Validate and Update
                     val validation = if (currentCountry != null) {
                         PhoneValidator.validateByCountry(currentCountry, cleaned)
-                    } else {
-                        null
-                    }
+                    } else null
 
-                    // Format if enabled
-                    val formatted = if (showFormatToggle && state.shouldFormat && currentCountry != null) {
-                        PhoneFormatter.format(
-                            countryCode = currentCountry.iso2,
-                            nationalNumber = cleaned,
-                            shouldFormat = true
-                        )
-                    } else {
-                        cleaned
-                    }
+                    val formatted =
+                        if (showFormatToggle && state.shouldFormat && currentCountry != null) {
+                            PhoneFormatter.format(
+                                countryCode = currentCountry.iso2,
+                                nationalNumber = cleaned,
+                                shouldFormat = true
+                            )
+                        } else {
+                            cleaned
+                        }
 
                     onStateChange(
                         state.copy(
@@ -189,6 +254,10 @@ fun PhoneInputField(
                 label = label,
                 country = currentCountry,
                 isValid = state.isValid,
+                isEnable = isEnable,
+                showTrial = showTrail,
+                trailText = trailText,
+                onTrailClick = onTrailClick,
                 theme = theme,
                 modifier = Modifier
                     .weight(1f)
@@ -277,13 +346,15 @@ private fun CountrySelectButton(
     modifier: Modifier = Modifier,
     showCountryCode: Boolean = true,
     showCountryFlag: Boolean = false,
-    showCountryISO2: Boolean = false
+    showCountryISO2: Boolean = false,
+    isEnable: Boolean = true
 ) {
     Row(
         modifier = modifier
             .clickable(
                 indication = ripple(),
                 interactionSource = remember { MutableInteractionSource() },
+                enabled = isEnable,
                 onClick = onClick
             )
             .padding(vertical = 12.dp),
@@ -291,14 +362,14 @@ private fun CountrySelectButton(
         horizontalArrangement = Arrangement.Center
     ) {
 
-        if(showCountryFlag){
+        if (showCountryFlag) {
             Text(
                 text = country?.flagEmoji ?: "🌍",
                 style = theme.getTypography().headlineSmall
             )
         }
 
-        if(showCountryISO2){
+        if (showCountryISO2) {
             Text(
                 text = country?.iso2 ?: "",
                 style = theme.getTypography().labelSmall,
@@ -307,7 +378,7 @@ private fun CountrySelectButton(
             )
         }
 
-        if(showCountryCode){
+        if (showCountryCode) {
             Text(
                 text = country?.dialCode ?: "Select",
                 style = theme.getTypography().labelSmall,
@@ -330,64 +401,89 @@ private fun PhoneNumberInput(
     label: String,
     country: Country?,
     isValid: Boolean,
+    isEnable: Boolean = true,
+    showTrial: Boolean,
+    trailText: String,
+    onTrailClick: () -> Unit,
     theme: CountryPickerTheme,
     modifier: Modifier = Modifier
 ) {
-    TextField(
-        value = value,
-        onValueChange = { newValue ->
-            // Only allow digits
-            val digits = newValue.filter { it.isDigit() }
-            if (digits.length <= 15) {  // Max 15 digits for international numbers
-                onValueChange(digits)
-            }
-        },
-        modifier = modifier
-            .height(56.dp),
-        placeholder = {
-            Text(
-                text = "Enter number",
-                style = theme.getTypography().bodyMedium,
-                color = theme.getOnSurfaceColor().copy(alpha = 0.5f)
-            )
-        },
-        singleLine = true,
-        textStyle = theme.getTypography().bodyMedium,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            focusedTextColor = theme.getOnSurfaceColor(),
-            unfocusedTextColor = theme.getOnSurfaceColor()
-        ),
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number,
-            imeAction = ImeAction.Done
-        ),
-        keyboardActions = KeyboardActions(
-            onDone = { /* Dismiss keyboard */ }
-        ),
-        /*
-        trailingIcon = {
-            if (value.isNotEmpty()) {
-                if (isValid) {
+
+    val customTextSelectionColors = TextSelectionColors(
+        handleColor = theme.getPrimaryColor(),
+        backgroundColor = theme.getPrimaryColor().copy(alpha = 0.2f)
+    )
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    CompositionLocalProvider(
+        LocalTextSelectionColors provides customTextSelectionColors
+    ) {
+        TextField(
+            value = value,
+            onValueChange = { newValue ->
+                // Allow digits AND the '+' sign at the start
+                val allowedChars = newValue.filterIndexed { index, char ->
+                    char.isDigit() || (char == '+' && index == 0)
+                }
+
+                if (allowedChars.length <= 16) {
+                    onValueChange(allowedChars)
+                }
+
+            },
+            modifier = modifier
+                .height(56.dp),
+            placeholder = {
+                Text(
+                    text = label,
+                    style = theme.getTypography().bodyMedium,
+                    color = theme.getOnSurfaceColor().copy(alpha = 0.5f)
+                )
+            },
+            enabled = isEnable,
+            singleLine = true,
+            textStyle = theme.getTypography().bodyMedium,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent,
+
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+
+                disabledTextColor = theme.getOnSurfaceColor().copy(alpha = 0.38f),
+                disabledPlaceholderColor = theme.getOnSurfaceColor().copy(alpha = 0.38f),
+                disabledLabelColor = theme.getOnSurfaceColor().copy(alpha = 0.38f),
+
+                cursorColor = theme.getOutlineColor(),
+                focusedTextColor = theme.getOnSurfaceColor(),
+                unfocusedTextColor = theme.getOnSurfaceColor()
+            ),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    keyboardController?.hide()
+                }
+            ),
+
+            trailingIcon = {
+                if (showTrial) {
                     Text(
-                        "✓",
-                        style = theme.getTypography().headlineSmall,
-                        color = Color(0xFF4CAF50),
-                        modifier = Modifier.padding(end = 12.dp)
-                    )
-                } else if (country != null) {
-                    Text(
-                        "✗",
-                        style = theme.getTypography().headlineSmall,
-                        color = theme.getErrorColor(),
-                        modifier = Modifier.padding(end = 12.dp)
+                        text = trailText,
+                        style = theme.getTypography().bodySmall,
+                        color = if(isEnable) theme.getPrimaryColor() else theme.getOutlineColor(),
+                        modifier = Modifier.padding(end = 8.dp)
+                            .clickable(isEnable) { onTrailClick() }
                     )
                 }
+
             }
-        }
-        */
-    )
+
+        )
+    }
+
 }

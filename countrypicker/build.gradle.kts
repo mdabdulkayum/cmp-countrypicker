@@ -12,8 +12,8 @@ plugins {
 
 }
 
-group = "io.github.kotlin"
-version = "1.0.0"
+group = "io.github.mdabdulkayum"
+version = "1.0.8"
 
 kotlin {
 
@@ -75,7 +75,7 @@ mavenPublishing {
     coordinates(
         "io.github.mdabdulkayum",
         "cmp-countrypicker",
-        "1.0.0"
+        "1.0.8"
     )
 
     pom {
