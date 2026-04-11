@@ -202,6 +202,58 @@ allowFormatting = true
 * Displays formatted output below input
 
 ---
+## 🔴 Required Field Indicator
+
+Easily mark a field as **required** by adding `*` to the label.
+
+The library will automatically render the `*` in **red color**, keeping your UI clean and consistent.
+
+---
+
+### ✨ Example
+
+```kotlin
+PhoneInputField(
+    state = phoneState,
+    onStateChange = { phoneState = it },
+    label = "Phone Number *"
+)
+```
+
+---
+
+### 🎯 Behavior
+
+* `"Phone Number"` → displayed as normal text
+* `"*"` → automatically styled in **red**
+
+---
+
+### ⚙️ How It Works
+
+The label is internally parsed and styled using `AnnotatedString`:
+
+```kotlin
+fun buildRequiredLabel(label: String): AnnotatedString {
+    return buildAnnotatedString {
+        append(label.replace("*", "").trim())
+        append(" ")
+        withStyle(style = SpanStyle(color = Color.Red)) {
+            append("*")
+        }
+    }
+}
+```
+
+---
+
+### ✅ Notes
+
+* No extra configuration required
+* Automatically applied when `*` is present
+* Ensures consistent required field indication across your app
+---
+
 
 ## 🧠 Architecture Overview
 
