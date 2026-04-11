@@ -34,8 +34,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import core.Country
 import core.CountryFilter
@@ -415,6 +419,11 @@ private fun PhoneNumberInput(
     )
     val keyboardController = LocalSoftwareKeyboardController.current
 
+    val displayLabel = remember(label) {
+        if (label.contains("*")) buildRequiredLabel(label)
+        else AnnotatedString(label)
+    }
+
     CompositionLocalProvider(
         LocalTextSelectionColors provides customTextSelectionColors
     ) {
@@ -435,7 +444,7 @@ private fun PhoneNumberInput(
                 .height(56.dp),
             placeholder = {
                 Text(
-                    text = label,
+                    text = displayLabel,
                     style = theme.getTypography().bodyMedium,
                     color = theme.getOnSurfaceColor().copy(alpha = 0.5f)
                 )
@@ -486,4 +495,15 @@ private fun PhoneNumberInput(
         )
     }
 
+}
+
+
+fun buildRequiredLabel(label: String): AnnotatedString {
+    return buildAnnotatedString {
+        append(label.replace("*", "").trim()) // Append the main text
+        append(" ")
+        withStyle(style = SpanStyle(color = Color.Red)) {
+            append("*") // Append the red asterisk
+        }
+    }
 }

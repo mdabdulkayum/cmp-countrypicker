@@ -1,23 +1,309 @@
-<<<<<<< HEAD
-[![official project](http://jb.gg/badges/official.svg)](https://github.com/JetBrains#jetbrains-on-github)
+# 🌍 CMP Country Picker
 
-# Multiplatform library template
+A powerful, flexible, and fully customizable **Country Picker & Phone Number Input library** for **Jetpack Compose** and **Compose Multiplatform**.
 
-## What is it?
+> Designed for modern apps that need seamless international phone number handling with clean UI and developer-friendly APIs.
 
-This repository contains a simple library project, intended to demonstrate a [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html) library that is deployable to [Maven Central](https://central.sonatype.com/).
+---
 
-The library has only one function: generate the [Fibonacci sequence](https://en.wikipedia.org/wiki/Fibonacci_sequence) starting from platform-provided numbers. Also, it has a test for each platform just to be sure that tests run.
+## ✨ Features
 
-Note that no other actions or tools usually required for the library development are set up, such as [tracking of backwards compatibility](https://kotlinlang.org/docs/jvm-api-guidelines-backward-compatibility.html#tools-designed-to-enforce-backward-compatibility), explicit API mode, licensing, contribution guideline, code of conduct and others. You can find a guide for best practices for designing Kotlin libraries [here](https://kotlinlang.org/docs/api-guidelines-introduction.html).
+* 🌎 **250+ Countries Supported**
+* 🔍 **Searchable Country List**
+* 📱 **Country Picker Bottom Sheet**
+* ☎️ **Smart Phone Number Input**
+* ✅ **Country-based Validation**
+* 🔄 **Auto Parsing of International Numbers** (`+880...`)
+* 🎨 **Fully Customizable UI & Theme**
+* 🚫 **Whitelist / Blacklist Countries**
+* 🌐 **Compose Multiplatform Ready**
+* 🧩 **Use Built-in UI or Build Your Own**
 
-## Guide
+---
 
-Please find the detailed guide [here](https://www.jetbrains.com/help/kotlin-multiplatform-dev/multiplatform-publish-libraries.html).
+## 📸 Screenshots
 
-# Other resources
-* [Publishing via the Central Portal](https://central.sonatype.org/publish-ea/publish-ea-guide/)
-* [Gradle Maven Publish Plugin \- Publishing to Maven Central](https://vanniktech.github.io/gradle-maven-publish-plugin/central/)
-=======
-# cmp-countrypicker
->>>>>>> origin/main
+> *(Add your screenshots here — recommended size: mobile aspect ratio)*
+
+### Country Picker
+
+![Country Picker Screenshot](docs/images/country_picker.png)
+
+### Phone Input Field
+
+![Phone Input Screenshot](docs/images/phone_input.png)
+
+### Search & Filter
+
+![Search Screenshot](docs/images/search.png)
+
+---
+
+## 📦 Installation
+
+### Maven
+
+```xml
+<dependency>
+    <groupId>io.github.mdabdulkayum</groupId>
+    <artifactId>cmp-countrypicker</artifactId>
+    <version>1.0.9</version>
+</dependency>
+```
+
+### Gradle (Kotlin DSL)
+
+```kotlin
+implementation("io.github.mdabdulkayum:cmp-countrypicker:1.0.9")
+```
+
+### Gradle (Groovy)
+
+```groovy
+implementation 'io.github.mdabdulkayum:cmp-countrypicker:1.0.9'
+```
+
+---
+
+## 🚀 Quick Start
+
+---
+
+### 1️⃣ Country Picker Bottom Sheet
+
+```kotlin
+val pickerState = rememberCountryPickerState()
+
+var isOpen by remember { mutableStateOf(false) }
+
+Button(onClick = { isOpen = true }) {
+    Text("Select Country")
+}
+
+CountryPickerBottomSheet(
+    state = pickerState,
+    isOpen = isOpen,
+    onDismiss = { isOpen = false },
+    onCountrySelected = { country ->
+        println("Selected: ${country.name}")
+    }
+)
+```
+
+---
+
+### 2️⃣ Phone Input Field (Basic)
+
+```kotlin
+var phoneState by remember {
+    mutableStateOf(PhoneInputState())
+}
+
+PhoneInputField(
+    state = phoneState,
+    onStateChange = { phoneState = it }
+)
+```
+
+---
+
+### 3️⃣ Advanced Usage
+
+```kotlin
+var phoneState by remember {
+    mutableStateOf(PhoneInputState())
+}
+
+PhoneInputField(
+    state = phoneState,
+    onStateChange = { phoneState = it },
+    defaultCountry = CountryRepository.getByIso2("BD"),
+    countryFilter = CountryFilter.Whitelist(
+        setOf("BD", "US", "IN")
+    ),
+    allowFormatting = true,
+    showCountryFlag = true,
+    showCountryISO2 = true
+)
+```
+
+---
+
+## 🎨 Customization
+
+Easily customize the look and behavior:
+
+```kotlin
+PhoneInputField(
+    state = state,
+    onStateChange = { },
+    theme = CountryPickerThemeDefaults.light(),
+    showCountryCode = true,
+    showCountryFlag = true,
+    showCountryISO2 = false
+)
+```
+
+### Theme Support
+
+* Light / Dark themes
+* Custom typography
+* Custom colors
+* Shape customization
+
+---
+
+## 🔍 Country Filtering
+
+Control which countries are visible:
+
+```kotlin
+// Show all
+CountryFilter.All
+
+// Only specific countries
+CountryFilter.Whitelist(setOf("US", "BD", "IN"))
+
+// Exclude countries
+CountryFilter.Blacklist(setOf("PK", "AF"))
+```
+
+---
+
+## 📞 Phone Number Handling
+
+### ✅ Parsing International Numbers
+
+```kotlin
+val state = PhoneInputState.fromFullNumber("+8801712345678")
+```
+
+* Automatically detects country
+* Extracts national number
+* Applies validation
+
+---
+
+### ✅ Validation
+
+* Country-specific rules
+* Length validation
+* Optional regex support
+
+---
+
+### ✅ Formatting
+
+```kotlin
+allowFormatting = true
+```
+
+* Toggle formatting dynamically
+* Displays formatted output below input
+
+---
+
+## 🧠 Architecture Overview
+
+### 📌 Core Models
+
+#### `Country`
+
+* Name, ISO2, ISO3
+* Dial code (`+880`)
+* Flag emoji
+* Validation rules
+
+---
+
+### 📌 Data Layer
+
+#### `CountryRepository`
+
+* Get all countries
+* Search countries
+* Filter countries
+* Lookup by ISO / dial code
+
+---
+
+### 📌 State Management
+
+#### `CountryPickerState`
+
+* Selected country
+* Search query
+* Filtered list
+
+#### `PhoneInputState`
+
+* Phone number
+* Selected country
+* Validation state
+* Error handling
+
+---
+
+### 📌 Smart Parsing Engine
+
+* Matches dial codes efficiently
+* Handles overlapping dial codes (`+1`, `+1-268`)
+* Extracts national number cleanly
+
+---
+
+## 🧪 Use Cases
+
+* 🔐 Login / Signup forms
+* 📲 OTP verification
+* 🌍 International apps
+* 🛒 E-commerce checkout
+* 📞 Contact forms
+
+---
+
+## 🛠 Roadmap
+
+* 🌐 Localization support
+* 🖼 Replace emoji flags with image assets
+* 💻 Improved Compose Desktop support
+* 🌍 Web (Compose WASM) enhancements
+* ⚡ Async country loading
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome!
+
+1. Fork the repo
+2. Create a feature branch
+3. Commit your changes
+4. Open a Pull Request
+
+---
+
+## 📄 License
+
+MIT License © 2026
+
+---
+
+## ⭐ Support
+
+If you like this project:
+
+* ⭐ Star the repository
+* 🐛 Report issues
+* 💡 Suggest features
+
+---
+
+## 💬 Author
+
+**Md. Abdul Kayum**
+
+---
+
+> Built with ❤️ using Jetpack Compose & Compose Multiplatform
+
