@@ -25,14 +25,22 @@ A powerful, flexible, and fully customizable **Country Picker & Phone Number Inp
 
 > *(Add your screenshots here — recommended size: mobile aspect ratio)*
 
-### Country Picker
-<img src="images/country_picker.jpg" width="300"/>
+<p align="center">
+  <span style="display:inline-block; text-align:center; margin:10px;">
+    <img src="images/country_picker.jpg" width="200"/><br/>
+    <sub>Country Picker</sub>
+  </span>
 
-### Phone Input Field
-<img src="images/phone_input.jpg" width="300"/>
+  <span style="display:inline-block; text-align:center; margin:10px;">
+    <img src="images/phone_input.jpg" width="200"/><br/>
+    <sub>Phone Input Field</sub>
+  </span>
 
-### Error & Validation
-<img src="images/error_number_validator.jpg" width="300"/>
+  <span style="display:inline-block; text-align:center; margin:10px;">
+    <img src="images/error_number_validator.jpg" width="200"/><br/>
+    <sub>Error & Validation</sub>
+  </span>
+</p>
 
 ---
 
