@@ -26,16 +26,13 @@ A powerful, flexible, and fully customizable **Country Picker & Phone Number Inp
 > *(Add your screenshots here — recommended size: mobile aspect ratio)*
 
 ### Country Picker
-
-![Country Picker Screenshot](images/country_picker.jpg)
+<img src="images/country_picker.jpg" width="300"/>
 
 ### Phone Input Field
-
-![Phone Input Screenshot](images/phone_input.jpg)
+<img src="images/phone_input.jpg" width="300"/>
 
 ### Error & Validation
-
-![Search Screenshot](images/search.jpg)
+<img src="images/error_number_validator.jpg" width="300"/>
 
 ---
 
