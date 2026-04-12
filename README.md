@@ -23,8 +23,6 @@ A powerful, flexible, and fully customizable **Country Picker & Phone Number Inp
 
 ## 📸 Screenshots
 
-> *(Add your screenshots here — recommended size: mobile aspect ratio)*
-
 <p align="center">
   <span style="display:inline-block; text-align:center; margin:10px;">
     <img src="images/country_picker.jpg" width="200"/><br/>
