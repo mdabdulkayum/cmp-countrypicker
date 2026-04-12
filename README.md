@@ -43,7 +43,7 @@ A powerful, flexible, and fully customizable **Country Picker & Phone Number Inp
 ---
 
 ## 📦 Installation
-
+### :vertical_traffic_light:  Check Updated Version: https://central.sonatype.com/artifact/io.github.mdabdulkayum/cmp-countrypicker
 ### Maven
 
 ```xml
