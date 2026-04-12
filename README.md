@@ -23,22 +23,22 @@ A powerful, flexible, and fully customizable **Country Picker & Phone Number Inp
 
 ## 📸 Screenshots
 
-<p align="center">
-  <span style="display:inline-block; text-align:center; margin:10px;">
-    <img src="images/country_picker.jpg" width="200"/><br/>
-    <sub>Country Picker</sub>
-  </span>
-
-  <span style="display:inline-block; text-align:center; margin:10px;">
-    <img src="images/phone_input.jpg" width="200"/><br/>
-    <sub>Phone Input Field</sub>
-  </span>
-
-  <span style="display:inline-block; text-align:center; margin:10px;">
-    <img src="images/error_number_validator.jpg" width="200"/><br/>
-    <sub>Error & Validation</sub>
-  </span>
-</p>
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="images/country_picker.jpg" width="200"/><br/>
+      <sub>Country Picker</sub>
+    </td>
+    <td align="center">
+      <img src="images/phone_input.jpg" width="200"/><br/>
+      <sub>Phone Input Field</sub>
+    </td>
+    <td align="center">
+      <img src="images/error_number_validator.jpg" width="200"/><br/>
+      <sub>Error & Validation</sub>
+    </td>
+  </tr>
+</table>
 
 ---
 
