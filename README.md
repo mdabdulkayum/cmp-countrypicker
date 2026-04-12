@@ -27,15 +27,15 @@ A powerful, flexible, and fully customizable **Country Picker & Phone Number Inp
 
 ### Country Picker
 
-![Country Picker Screenshot](docs/images/country_picker.png)
+![Country Picker Screenshot](images/country_picker.jpg)
 
 ### Phone Input Field
 
-![Phone Input Screenshot](docs/images/phone_input.png)
+![Phone Input Screenshot](images/phone_input.jpg)
 
-### Search & Filter
+### Error & Validation
 
-![Search Screenshot](docs/images/search.png)
+![Search Screenshot](images/search.jpg)
 
 ---
 
